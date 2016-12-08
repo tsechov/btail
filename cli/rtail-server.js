@@ -13,7 +13,7 @@ const dgram = require('dgram')
 const app = require('express')()
 const serve = require('express').static
 const http = require('http').Server(app)
-const io = require('socket.io')()
+
 const yargs = require('yargs')
 const debug = require('debug')('rtail:server')
 const webapp = require('./lib/webapp')
@@ -35,9 +35,10 @@ let argv = yargs
   .usage('Usage: rtail-server [OPTIONS]')
   .example('rtail-server --web-port 8080', 'Use custom HTTP port')
   .example('rtail-server --udp-port 8080', 'Use custom UDP port')
-  .example('rtail-server --web-version stable', 'Always uses latest stable webapp')
-  .example('rtail-server --web-version unstable', 'Always uses latest develop webapp')
-  .example('rtail-server --web-version 0.1.3', 'Use webapp v0.1.3')
+  .example('rtail-server --web-version development', 'For debugging purposes during development')
+//  .example('rtail-server --web-version unstable', 'Always uses latest develop webapp')
+//  .example('rtail-server --web-version 0.1.3', 'Use webapp v0.1.3')
+  .example('rtail-server --path /foo', 'serve via {HOST}:{PORT}/foo')
   .option('udp-host', {
     alias: 'uh',
     default: '127.0.0.1',
@@ -61,6 +62,10 @@ let argv = yargs
   .option('web-version', {
     type: 'string',
     describe: 'Define web app version to serve'
+  })
+  .option('path', {
+    type: 'string',
+    describe: 'The path prefix to serve'
   })
   .help('help')
   .alias('help', 'h')
@@ -102,6 +107,45 @@ socket.on('message', function (data, remote) {
   io.sockets.to(data.id).emit('line', message)
 })
 
+
+var io = require('socket.io')()
+
+/*!
+ * serve static webapp from S3
+ */
+var setupServer = function(path, sourceDir) {
+
+    if(path) {
+      app.use(path, serve(__dirname + sourceDir))
+      io = require('socket.io')(http, {path: path + '/socket.io'})
+      debug('serving from path: "%s"; sourceDir: "%s"', path, sourceDir)
+    } else {
+      app.use(serve(__dirname + sourceDir))
+      io = require('socket.io')()
+      debug('serving from path: "%s"; sourceDir: "%s"', '/', sourceDir)
+    }
+
+ }
+if (!argv.webVersion) {
+  if(argv.path) {
+    var path = argv.path.startsWith('/') ? argv.path : '/' + argv.path
+    setupServer(path, '/../dist')
+  } else {
+    setupServer(undefined, '/../dist')
+  }
+} else if ('development' === argv.webVersion) {
+  setupServer('/app', '/../app')
+  app.use('/node_modules', serve(__dirname + '/../node_modules'))
+} else {
+  throw new "only 'development' web-version is supported"
+  app.use(webapp({
+    s3: 'http://rtail.s3-website-us-east-1.amazonaws.com/' + argv.webVersion,
+    ttl: 1000 * 60 * 60 * 6 // 6H
+  }))
+
+  debug('serving webapp from: http://rtail.s3-website-us-east-1.amazonaws.com/%s', argv.webVersion)
+}
+
 /*!
  * socket.io
  */
@@ -114,24 +158,6 @@ io.on('connection', function (socket) {
     socket.emit('backlog', streams[stream])
   })
 })
-
-/*!
- * serve static webapp from S3
- */
-if (!argv.webVersion) {
-  app.use(serve(__dirname + '/../dist'))
-} else if ('development' === argv.webVersion) {
-  app.use('/app', serve(__dirname + '/../app'))
-  app.use('/node_modules', serve(__dirname + '/../node_modules'))
-  io.path('/app/socket.io')
-} else {
-  app.use(webapp({
-    s3: 'http://rtail.s3-website-us-east-1.amazonaws.com/' + argv.webVersion,
-    ttl: 1000 * 60 * 60 * 6 // 6H
-  }))
-
-  debug('serving webapp from: http://rtail.s3-website-us-east-1.amazonaws.com/%s', argv.webVersion)
-}
 
 /*!
  * listen!

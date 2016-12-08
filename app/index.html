@@ -18,42 +18,15 @@
 </head>
 <body class="{{ctrl.theme}} font-family-{{ctrl.fontFamily}} font-size-{{ctrl.fontSize}}">
 
-  <header>
-    <div class="rtail-logo"></div>
-
-    <button
-      class="btn btn-info"
-      popup-show="popover-info"
-      popup-placement="bottom"
-    ></button>
-
-    <a class="btn btn-github" href="https://github.com/kilianc/rtail" target="_blank"></a>
-
-    <button
-      class="btn btn-settings"
-      popup-show="popover-settings"
-      popup-placement="bottom"
-    ></button>
-  </header>
-
   <div class="split-pane">
     <div class="sidebar" ng-style="{ width: ctrl.sidebarWidth }" resizable>
       <div class="search-box">
-        <input type="text" placeholder="Search streams" ng-model="ctrl.streamsListFilter">
+        <div class="rtail-header">btail<br/>derived from <a href="http://rtail.org/">rtail</a></div>
+        <!--<input type="text" placeholder="derived from http://rtail.org/" ng-model="ctrl.streamsListFilter" disabled>foo-->
       </div>
 
       <div class="stream-sections">
-        <div class="stream-section">
-          <h4>Favorites</h4>
-          <a
-            ng-repeat="(stream, active) in ctrl.favorites | orderBy:''"
-            ng-class="{ selected: ctrl.isSelected(stream) }"
-            ui-sref="streams({ stream: stream })"
-          >
-            <span>{{::stream}}</span>
-            <i ng-show="stream.unread"></i>
-          </a>
-        </div>
+
 
         <div class="stream-section">
           <h4>Streams</h4>
@@ -75,8 +48,8 @@
 
     <div class="stream-view">
       <div class="stream-header">
-        <div class="stream-title" ng-click="ctrl.toggleFavorite(ctrl.activeStream)" ng-show="ctrl.activeStream">
-          <i class="stream-title-favorite" ng-class="{ on: ctrl.favorites[ctrl.activeStream] }"></i>
+        <div class="stream-title" ng-show="ctrl.activeStream">
+          <i class="stream-title-favorite" ></i>
           {{ctrl.activeStream}}
         </div>
         <div class="filter-box">
@@ -94,7 +67,7 @@
           "
         >
           <div class="stream-line-timestamp" ng-hide="ctrl.hiddenTimestamps[ctrl.activeStream]">
-            {{::line.timestamp | amDateFormat:ctrl.timestampFormat}}
+            {{::line.timestamp | amDateFormat:'MM/DD/YY hh:mm:ss'}}
           </div>
 
           <button
@@ -113,7 +86,7 @@
         </div>
       </div>
 
-      <button class="btn-resume" ng-click="ctrl.resume()" ng-show="ctrl.paused" hotkey="{ space: ctrl.resume }">Resume</button>
+      <button class="btn-resume" ng-click="ctrl.resume()" ng-show="ctrl.paused">Resume</button>
     </div>
   </div>
 
@@ -165,7 +138,7 @@
   </script>
 
   <!-- build:js(app) bundle.min.js -->
-  <script src="../node_modules/socket.io/node_modules/socket.io-client/socket.io.js"></script>
+  <script src="../node_modules/socket.io-client/socket.io.js"></script>
   <script src="../node_modules/jquery/dist/jquery.js"></script>
   <script src="../node_modules/moment/moment.js"></script>
   <script src="../node_modules/localforage/dist/localforage.js"></script>
@@ -177,7 +150,6 @@
   <script src="../node_modules/angular-localforage/dist/angular-localForage.js"></script>
   <script src="../node_modules/angular-rt-popup/dist/angular-rt-popup.js"></script>
   <script src="../node_modules/angular-ui-router/release/angular-ui-router.js"></script>
-  <script src="../node_modules/angular-hotkeys/build/hotkeys.js"></script>
   <script src="app.js"></script>
   <!-- endbuild -->
 </body>

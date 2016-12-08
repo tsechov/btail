@@ -11,8 +11,7 @@ angular
     'angularMoment',
     'LocalForageModule',
     'rt.popup',
-    'ui.router',
-    'cfp.hotkeys'
+    'ui.router'
   ])
   .config(function ($stateProvider) {
     $stateProvider.state('streams', {
@@ -64,15 +63,6 @@ angular
      * socket stuff
      */
     ctrl.socket = io(document.location.origin, { path: document.location.pathname + 'socket.io' })
-
-    ctrl.socket.on('connect', function () {
-      console.info('connected')
-      ctrl.activeStream && ctrl.socket.emit('select stream', ctrl.activeStream)
-    })
-
-    ctrl.socket.on('disconnect', function (err) {
-      console.warn('disconnected: %s', err)
-    })
 
     ctrl.socket.on('streams', function (streams) {
       ctrl.streams = streams
@@ -155,18 +145,18 @@ angular
       if (!ctrl.paused) return
       ctrl.paused = false
       ctrl.socket.emit('select stream', ctrl.activeStream)
-      $streamLines.on('wheel', ctrl.pause)
+      $streamLines.on('mousewheel', ctrl.pause)
     }
 
     ctrl.pause = function pause() {
       if (ctrl.paused) return
       ctrl.paused = true
       ctrl.socket.emit('select stream')
-      $streamLines.off('wheel', ctrl.pause)
+      $streamLines.off('mousewheel', ctrl.pause)
       $scope.$apply()
     }
 
-    $streamLines.on('wheel', ctrl.pause)
+    $streamLines.on('mousewheel', ctrl.pause)
 
     /*!
      * settings and preferences
@@ -246,10 +236,6 @@ angular
 
     $localForage.getItem('hiddenTimestamps').then(function (hiddenTimestamps) {
       ctrl.hiddenTimestamps = hiddenTimestamps || {}
-    })
-
-    $localForage.getItem('timestampFormat').then(function (timestampFormat) {
-      ctrl.timestampFormat = timestampFormat || 'MM/DD/YY hh:mm:ss'
     })
 
     $localForage.getItem('activeStream').then(function (activeStream) {

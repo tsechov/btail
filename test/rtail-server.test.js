@@ -9,7 +9,7 @@
 const assert = require('chai').assert
 const dgram = require('dgram')
 const dns = require('dns')
-const io = require('socket.io/node_modules/socket.io-client')
+const io = require('socket.io-client')
 const spawnClient = require('./util').spawnClient
 const spawnServer = require('./util').spawnServer
 const get = require('request').get
@@ -87,17 +87,17 @@ describe('rtail-server.js', function () {
   })
 
 
-  it('should serve the webapp from s3', function (done) {
+  it('should serve under a given path', function (done) {
     server.kill()
     server = spawnServer({
-      args: ['--web-version', 'stable']
+      args: ['--path', '/foo']
     })
 
     setTimeout(function () {
-      get('http://localhost:8888/index.html', function (err, res, body) {
+      get('http://localhost:8888/foo/index.html', function (err, res, body) {
         if (err) return done(err)
         assert.match(body, /ng-app="app"/)
-        assert.isDefined(res.headers['x-amz-request-id'])
+//        assert.isDefined(res.headers['x-amz-request-id'])
         done(err)
       })
     }, 1000)

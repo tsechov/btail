@@ -24,11 +24,26 @@
     background: $stream-list-bg-color;
 
     .search-box {
+
+      .rtail-header {
+        a {
+          text-decoration: underline;
+        }
+        height: 57px;
+        line-height: 28px;
+        width: 100%;
+        text-align: center;
+      }
       background-color: $stream-search-bg-color;
-      background-image: url('../images/#{$theme}/icn-search.svg');
+
+      //background-image: url('../images/#{$theme}/icn-search.svg');
 
       input {
         color: #787E80;
+      }
+      div {
+        color: #787E80;
+        align-items: center;
       }
     }
 
@@ -61,7 +76,8 @@
     background-color: $stream-view-bg-color;
 
     .stream-header {
-      background: #45a7b9;
+      //background: #45a7b9;
+      background: #f15a2b;
       color: #fff;
 
       .stream-title-favorite {

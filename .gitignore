@@ -3,3 +3,4 @@ app/*.js
 node_modules
 .idea
 btail-*.tgz
+.env
